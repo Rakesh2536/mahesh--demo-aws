@@ -1,0 +1,48 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Install NGINX') {
+            steps {
+                echo "Updating package list and installing NGINX..."
+                sh '''
+                    sudo apt update
+                    sudo apt install -y nginx
+                '''
+            }
+        }
+
+        stage('Deploy Welcome Page') {
+            steps {
+                echo "Creating custom welcome page..."
+                sh '''
+                    echo "<!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title> hello friends</title>
+                    </head>
+                    <body style='text-align: center; margin-top: 50px;'>
+                        <h1>Welcome  anasol consultancy services devops</h1>
+                    </body>
+                    </html>" | sudo tee /var/www/html/index.nginx-debian.html
+                '''
+            }
+        }
+
+        stage('Restart NGINX') {
+            steps {
+                echo "Restarting NGINX to apply changes..."
+                sh 'sudo systemctl restart nginx'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'NGINX installation and welcome page setup complete!'
+        }
+        failure {
+            echo 'Something went wrong. Please check the logs.'
+        }
+    }
+}
